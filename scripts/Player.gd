@@ -16,8 +16,8 @@ var ultimate_max: float = 100.0
 var gold: int = 0
 var gems: int = 0
 var level: int = 1
-var exp: int = 0
-var exp_for_next_level: int = 100
+var experience: int = 0
+var experience_for_next_level: int = 100
 var facing_right: bool = true
 
 var _sprite: Sprite2D = null
@@ -233,11 +233,11 @@ func add_gem(amount: int):
     gems += amount
 
 func add_experience(amount: int):
-    exp += amount
-    while exp >= exp_for_next_level:
-        exp -= exp_for_next_level
+    experience += amount
+    while experience >= experience_for_next_level:
+        experience -= experience_for_next_level
         level += 1
-        exp_for_next_level = int(exp_for_next_level * 1.3)
+        experience_for_next_level = int(experience_for_next_level * 1.3)
         max_health += 20
         current_health = max_health
         attack_power += 5

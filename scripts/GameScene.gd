@@ -7,6 +7,19 @@ var wave_label: Label
 var hp_label: Label
 var exp_label: Label
 var gold_label: Label
+
+var joystick_area: ColorRect
+var joystick_knob: ColorRect
+var joystick_active: bool = false
+var joystick_start: Vector2 = Vector2.ZERO
+var joystick_output: Vector2 = Vector2.ZERO
+
+var attack_button: Button
+var skill1_button: Button
+var skill2_button: Button
+var skill3_button: Button
+var ultimate_button: Button
+
 var enemy_spawn_timer: float = 0.0
 var enemy_spawn_interval: float = 2.0
 var wave: int = 1
@@ -23,6 +36,7 @@ func _ready():
     _spawn_player()
     _spawn_initial_enemies()
     _build_hud()
+    _build_mobile_ui()
 
 func _load_class():
     var file = FileAccess.open("user://class_save.txt", FileAccess.READ)
@@ -100,12 +114,78 @@ func _build_hud():
     gold_label.position = Vector2(20, 150)
     hud.add_child(gold_label)
 
-    var hint = Label.new()
-    hint.text = "WASD 移动 | 空格 攻击 | 1/2/3 技能 | 4 大招 | Esc 返回菜单"
-    hint.add_theme_font_size_override("font_size", 16)
-    hint.add_theme_color_override("font_color", Color(0.7, 0.7, 0.7, 1.0))
-    hint.position = Vector2(20, 560)
-    hud.add_child(hint)
+func _build_mobile_ui():
+    joystick_area = ColorRect.new()
+    joystick_area.color = Color(0.3, 0.3, 0.3, 0.4)
+    joystick_area.size = Vector2(150, 150)
+    joystick_area.position = Vector2(30, 420)
+    joystick_area.roundness = 10
+    joystick_area.z_index = 101
+    hud.add_child(joystick_area)
+
+    joystick_knob = ColorRect.new()
+    joystick_knob.color = Color(0.6, 0.6, 0.6, 0.8)
+    joystick_knob.size = Vector2(70, 70)
+    joystick_knob.position = Vector2(40, 430)
+    joystick_knob.roundness = 10
+    joystick_knob.z_index = 102
+    hud.add_child(joystick_knob)
+
+    attack_button = Button.new()
+    attack_button.text = "攻"
+    attack_button.add_theme_font_size_override("font_size", 48)
+    attack_button.add_theme_color_override("font_color", Color(1.0, 0.4, 0.4, 1.0))
+    attack_button.size = Vector2(90, 90)
+    attack_button.position = Vector2(680, 480)
+    attack_button.roundness = 10
+    attack_button.z_index = 101
+    hud.add_child(attack_button)
+
+    skill1_button = Button.new()
+    skill1_button.text = "1"
+    skill1_button.add_theme_font_size_override("font_size", 24)
+    skill1_button.add_theme_color_override("font_color", Color(0.4, 0.8, 1.0, 1.0))
+    skill1_button.size = Vector2(60, 60)
+    skill1_button.position = Vector2(620, 400)
+    skill1_button.roundness = 8
+    skill1_button.z_index = 101
+    hud.add_child(skill1_button)
+
+    skill2_button = Button.new()
+    skill2_button.text = "2"
+    skill2_button.add_theme_font_size_override("font_size", 24)
+    skill2_button.add_theme_color_override("font_color", Color(0.4, 1.0, 0.6, 1.0))
+    skill2_button.size = Vector2(60, 60)
+    skill2_button.position = Vector2(690, 400)
+    skill2_button.roundness = 8
+    skill2_button.z_index = 101
+    hud.add_child(skill2_button)
+
+    skill3_button = Button.new()
+    skill3_button.text = "3"
+    skill3_button.add_theme_font_size_override("font_size", 24)
+    skill3_button.add_theme_color_override("font_color", Color(1.0, 0.8, 0.4, 1.0))
+    skill3_button.size = Vector2(60, 60)
+    skill3_button.position = Vector2(760, 400)
+    skill3_button.roundness = 8
+    skill3_button.z_index = 101
+    hud.add_child(skill3_button)
+
+    ultimate_button = Button.new()
+    ultimate_button.text = "大"
+    ultimate_button.add_theme_font_size_override("font_size", 32)
+    ultimate_button.add_theme_color_override("font_color", Color(0.9, 0.4, 1.0, 1.0))
+    ultimate_button.size = Vector2(70, 70)
+    ultimate_button.position = Vector2(695, 320)
+    ultimate_button.roundness = 8
+    ultimate_button.z_index = 101
+    hud.add_child(ultimate_button)
+
+    attack_button.pressed.connect(_on_attack_pressed)
+    skill1_button.pressed.connect(_on_skill1_pressed)
+    skill2_button.pressed.connect(_on_skill2_pressed)
+    skill3_button.pressed.connect(_on_skill3_pressed)
+    ultimate_button.pressed.connect(_on_ultimate_pressed)
 
 func _spawn_initial_enemies():
     for i in range(3):
@@ -146,6 +226,7 @@ func _physics_process(delta: float):
         camera.position = camera.position.lerp(player.position, 0.1)
 
     _update_hud()
+    _update_joystick()
 
     if Input.is_action_just_pressed("ui_cancel"):
         get_tree().change_scene_to_file("res://scenes/MainMenu.tscn")
@@ -164,8 +245,62 @@ func _update_hud():
 
     wave_label.text = "第 %d 波" % wave
     hp_label.text = "HP: %d/%d" % [player.get("current_health"), player.get("max_health")]
-    exp_label.text = "LV %d  EXP: %d/%d" % [player.get("level"), player.get("exp"), player.get("exp_for_next_level")]
+    exp_label.text = "LV %d  EXP: %d/%d" % [player.get("level"), player.get("experience"), player.get("experience_for_next_level")]
     gold_label.text = "金币: %d  宝石: %d" % [player.get("gold"), player.get("gems")]
+
+func _update_joystick():
+    if joystick_active and player:
+        var input_dir = joystick_output.normalized()
+        Input.action_set_value("move_left", -input_dir.x if input_dir.x < 0 else 0)
+        Input.action_set_value("move_right", input_dir.x if input_dir.x > 0 else 0)
+        Input.action_set_value("move_up", -input_dir.y if input_dir.y < 0 else 0)
+        Input.action_set_value("move_down", input_dir.y if input_dir.y > 0 else 0)
+
+func _on_attack_pressed():
+    Input.action_press("attack")
+    await get_tree().create_timer(0.1).timeout
+    Input.action_release("attack")
+
+func _on_skill1_pressed():
+    Input.action_press("skill_1")
+    await get_tree().create_timer(0.1).timeout
+    Input.action_release("skill_1")
+
+func _on_skill2_pressed():
+    Input.action_press("skill_2")
+    await get_tree().create_timer(0.1).timeout
+    Input.action_release("skill_2")
+
+func _on_skill3_pressed():
+    Input.action_press("skill_3")
+    await get_tree().create_timer(0.1).timeout
+    Input.action_release("skill_3")
+
+func _on_ultimate_pressed():
+    Input.action_press("ultimate")
+    await get_tree().create_timer(0.1).timeout
+    Input.action_release("ultimate")
+
+func _input(event: InputEvent):
+    if event is InputEventScreenTouch:
+        var touch_pos = event.position
+
+        if event.pressed:
+            if touch_pos.distance_to(joystick_area.global_position + Vector2(75, 75)) < 75:
+                joystick_active = true
+                joystick_start = touch_pos
+                joystick_output = Vector2.ZERO
+        else:
+            if joystick_active:
+                joystick_active = false
+                joystick_output = Vector2.ZERO
+                joystick_knob.position = Vector2(40, 430)
+
+    elif event is InputEventScreenDrag and joystick_active:
+        var delta = event.position - joystick_start
+        joystick_output = delta.clamped(60)
+        var knob_pos = Vector2(40, 430) + joystick_output * 0.8
+        joystick_knob.position = knob_pos
 
 func _on_enemy_died():
     enemies_killed_in_wave += 1
