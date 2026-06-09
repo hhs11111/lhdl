@@ -131,22 +131,22 @@ func _build_ui():
     start_btn.anchor_right = 0.5
     start_btn.offset_left = -200
     start_btn.offset_right = 200
-    start_btn.offset_top = 600
-    start_btn.offset_bottom = 680
+    start_btn.offset_top = 480
+    start_btn.offset_bottom = 540
     start_btn.pressed.connect(_on_start)
     add_child(start_btn)
 
     message_label = Label.new()
     message_label.text = "WASD 移动 | 空格攻击 | 1/2/3 技能 | 4 大招"
     message_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-    message_label.add_theme_font_size_override("font_size", 20)
+    message_label.add_theme_font_size_override("font_size", 16)
     message_label.add_theme_color_override("font_color", Color(0.7, 0.7, 0.7, 1.0))
     message_label.anchor_left = 0.5
     message_label.anchor_right = 0.5
     message_label.offset_left = -500
     message_label.offset_right = 500
-    message_label.offset_top = 720
-    message_label.offset_bottom = 760
+    message_label.offset_top = 545
+    message_label.offset_bottom = 580
     add_child(message_label)
 
 func _on_prev_class():
