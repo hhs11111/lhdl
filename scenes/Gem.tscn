@@ -1,0 +1,7 @@
+[gd_scene load_steps=2 format=3 uid="uid://gemitem0001"]
+
+[ext_resource type="Script" path="res://scripts/Gem.gd" id="1_gem"]
+
+[node name="Gem" type="Area2D"]
+script = ExtResource("1_gem")
+amount = 1

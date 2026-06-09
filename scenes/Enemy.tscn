@@ -1,0 +1,11 @@
+[gd_scene load_steps=2 format=3 uid="uid://enemychar0001"]
+
+[ext_resource type="Script" path="res://scripts/Enemy.gd" id="1_enemy"]
+
+[node name="Enemy" type="CharacterBody2D"]
+script = ExtResource("1_enemy")
+max_health = 50
+attack_power = 5
+speed = 80.0
+gold_amount = 5
+drop_rate = 0.3

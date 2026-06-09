@@ -1,6 +1,6 @@
 extends Area2D
 
-@export var amount: int = 1
+@export var amount: int = 10
 var _sprite: Sprite2D
 var _bob_timer: float = 0.0
 var _life: float = 30.0
@@ -14,7 +14,7 @@ func _ready():
     _sprite.centered = true
     add_child(_sprite)
     
-    var texture = ImageTexture.create_from_image(_create_gem_image())
+    var texture = ImageTexture.create_from_image(_create_exp_image())
     _sprite.texture = texture
     
     var collision = CollisionShape2D.new()
@@ -29,28 +29,28 @@ func _ready():
 func _process(delta):
     _bob_timer += delta
     _sprite.position.y = sin(_bob_timer * 3.0) * 2.0
-    _sprite.rotation += delta * 3.0
+    _sprite.rotation += delta * 2.0
     
     _life -= delta
     if _life <= 0:
         queue_free()
 
 func _on_body_entered(body: Node2D):
-    if body.has_method("add_gem"):
-        body.add_gem(amount)
+    if body.has_method("add_experience"):
+        body.add_experience(amount)
         queue_free()
 
 func _on_area_entered(area: Area2D):
     var parent = area.get_parent()
-    if parent and parent.has_method("add_gem"):
-        parent.add_gem(amount)
+    if parent and parent.has_method("add_experience"):
+        parent.add_experience(amount)
         queue_free()
 
 func on_pickup(player: Node):
-    if player.has_method("add_gem"):
-        player.add_gem(amount)
+    if player.has_method("add_experience"):
+        player.add_experience(amount)
 
-func _create_gem_image() -> Image:
+func _create_exp_image() -> Image:
     var img = Image.create(20, 20, false, Image.FORMAT_RGBA8)
     img.fill(Color(0, 0, 0, 0))
     
@@ -58,12 +58,10 @@ func _create_gem_image() -> Image:
         for x in range(20):
             var cx = x - 10
             var cy = y - 10
-            var diamond = abs(cx) + abs(cy)
+            var dist = sqrt(cx * cx + cy * cy)
             
-            if diamond < 8:
-                var brightness = 0.5 + (8.0 - diamond) / 8.0 * 0.5
-                img.set_pixel(x, y, Color(0.5 * brightness, 1.0 * brightness, 0.7 * brightness, brightness))
-    
-    img.set_pixel(10, 5, Color(1.0, 1.0, 1.0, 1.0))
+            if dist < 8:
+                var brightness = 0.6 + (8.0 - dist) / 8.0 * 0.4
+                img.set_pixel(x, y, Color(0.3 * brightness, 0.5 * brightness, 1.0, brightness))
     
     return img
