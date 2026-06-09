@@ -249,44 +249,36 @@ func _update_hud():
     gold_label.text = "金币: %d  宝石: %d" % [player.get("gold"), player.get("gems")]
 
 func _update_joystick():
-    if joystick_active and player:
+    if joystick_active and player and player.has_method("set_joystick_input"):
         var input_dir = joystick_output.normalized()
-        Input.action_set_value("move_left", -input_dir.x if input_dir.x < 0 else 0)
-        Input.action_set_value("move_right", input_dir.x if input_dir.x > 0 else 0)
-        Input.action_set_value("move_up", -input_dir.y if input_dir.y < 0 else 0)
-        Input.action_set_value("move_down", input_dir.y if input_dir.y > 0 else 0)
+        player.set_joystick_input(input_dir)
 
 func _on_attack_pressed():
-    Input.action_press("attack")
-    await get_tree().create_timer(0.1).timeout
-    Input.action_release("attack")
+    if player and player.has_method("do_attack"):
+        player.do_attack()
 
 func _on_skill1_pressed():
-    Input.action_press("skill_1")
-    await get_tree().create_timer(0.1).timeout
-    Input.action_release("skill_1")
+    if player and player.has_method("do_skill"):
+        player.do_skill(0)
 
 func _on_skill2_pressed():
-    Input.action_press("skill_2")
-    await get_tree().create_timer(0.1).timeout
-    Input.action_release("skill_2")
+    if player and player.has_method("do_skill"):
+        player.do_skill(1)
 
 func _on_skill3_pressed():
-    Input.action_press("skill_3")
-    await get_tree().create_timer(0.1).timeout
-    Input.action_release("skill_3")
+    if player and player.has_method("do_skill"):
+        player.do_skill(2)
 
 func _on_ultimate_pressed():
-    Input.action_press("ultimate")
-    await get_tree().create_timer(0.1).timeout
-    Input.action_release("ultimate")
+    if player and player.has_method("do_ultimate"):
+        player.do_ultimate()
 
 func _input(event: InputEvent):
     if event is InputEventScreenTouch:
         var touch_pos = event.position
-
+        var joystick_center = Vector2(105, 495)
         if event.pressed:
-            if touch_pos.distance_to(joystick_area.global_position + Vector2(75, 75)) < 75:
+            if touch_pos.distance_to(joystick_center) < 90:
                 joystick_active = true
                 joystick_start = touch_pos
                 joystick_output = Vector2.ZERO
@@ -295,6 +287,8 @@ func _input(event: InputEvent):
                 joystick_active = false
                 joystick_output = Vector2.ZERO
                 joystick_knob.position = Vector2(40, 430)
+                if player and player.has_method("set_joystick_input"):
+                    player.set_joystick_input(Vector2.ZERO)
 
     elif event is InputEventScreenDrag and joystick_active:
         var delta = event.position - joystick_start

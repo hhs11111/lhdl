@@ -19,6 +19,7 @@ var level: int = 1
 var experience: int = 0
 var experience_for_next_level: int = 100
 var facing_right: bool = true
+var joystick_input: Vector2 = Vector2.ZERO
 
 var _sprite: Sprite2D = null
 var _attack_flash_timer: float = 0.0
@@ -100,6 +101,9 @@ func _handle_movement(delta: float):
     if Input.is_action_pressed("move_down"):
         input_dir.y += 1
     
+    if joystick_input.length() > 0.1:
+        input_dir = joystick_input
+    
     input_dir = input_dir.normalized()
     
     if input_dir != Vector2.ZERO:
@@ -113,6 +117,43 @@ func _handle_movement(delta: float):
         velocity = velocity.lerp(Vector2.ZERO, 0.5)
     
     move_and_slide()
+
+func set_joystick_input(dir: Vector2):
+    joystick_input = dir
+
+func do_attack():
+    if not is_attacking:
+        var now: int = Time.get_ticks_msec()
+        if now - last_attack_time > attack_cooldown * 1000:
+            attack()
+
+func do_skill(index: int):
+    if _skill_cooldowns[index] > 0:
+        return
+    _skill_cooldowns[index] = 3.0
+    var skill_damage = int(get_total_attack_power() * 2.0)
+    match index:
+        0:
+            skill_damage = int(get_total_attack_power() * 1.5)
+        1:
+            skill_damage = int(get_total_attack_power() * 2.5)
+        2:
+            skill_damage = int(get_total_attack_power() * 3.0)
+    var enemies_list = get_tree().get_nodes_in_group("enemies")
+    for enemy in enemies_list:
+        var dist = enemy.global_position.distance_to(global_position)
+        if dist < 200:
+            enemy.take_damage(skill_damage)
+    ultimate_charge = min(ultimate_charge + 8.0, ultimate_max)
+
+func do_ultimate():
+    if ultimate_charge < ultimate_max:
+        return
+    ultimate_charge = 0.0
+    var enemies_list = get_tree().get_nodes_in_group("enemies")
+    for enemy in enemies_list:
+        if enemy.global_position.distance_to(global_position) < 300:
+            enemy.take_damage(int(get_total_attack_power() * 6.0))
 
 func _handle_attack():
     if Input.is_action_pressed("attack") and not is_attacking:
