@@ -1,9 +1,5 @@
-; Engine configuration file.
-;
-; 骑士传说 - 2D刷宝游戏
-; 元气骑士前传风格的 2D 像素风 ARPG 刷宝游戏
-;
-; Godot 4.6+
+; 像素风 ARPG 刷宝游戏 - 骑士传说
+; 类似元气骑士前传风格
 
 [application]
 
